@@ -1,5 +1,5 @@
 from __future__ import division
-from collections import Counter, defaultdict
+import collections
 
 """
 chapter 1 - Introduction
@@ -90,7 +90,7 @@ def not_friends(user, other_user):
 
 
 def friends_of_friend_ids(user):
-    return Counter(foaf["id"]
+    return collections.Counter(foaf["id"]
                    for friend in user["friends"]
                    for foaf in friend["friends"]
                    if not_the_same(user, foaf)
@@ -124,7 +124,7 @@ def data_scientists_who_like(target_interest):
 
 
 # keys are interests, values are lists of user_ids with that interest
-user_ids_by_interest = defaultdict(list)
+user_ids_by_interest = collections.defaultdict(list)
 
 
 for user_id, interest in interests:
@@ -132,7 +132,7 @@ for user_id, interest in interests:
 
 
 # keys are user_ids, values are lists of interests for that user_id
-interests_by_user_id = defaultdict(list)
+interests_by_user_id = collections.defaultdict(list)
 
 
 for user_id, interest in interests:
@@ -140,7 +140,7 @@ for user_id, interest in interests:
 
 
 def most_common_interests_with(user):
-    return Counter(interested_user_id
+    return collections.Counter(interested_user_id
                    for interest in interests_by_user_id[user["id"]]
                    for interested_user_id in user_ids_by_interest[interest]
                    if interested_user_id != user["id"])
@@ -158,7 +158,7 @@ salaries_and_tenures = [(83000, 8.7), (88000, 8.1),
                         (48000, 1.9), (63000, 4.2)]
 
 # keys are years, values are lists of the salaries for each tenure
-salary_by_tenure = defaultdict(list)
+salary_by_tenure = collections.defaultdict(list)
 
 for salary, tenure in salaries_and_tenures:
     salary_by_tenure[tenure].append(salary)
@@ -169,3 +169,64 @@ average_salary_by_tenure = {
     for tenure, salaries in salary_by_tenure.items()
 }
 
+
+def tenure_bucket(tenure):
+    if tenure < 2:
+        return "less than two"
+    elif tenure < 5:
+        return "between two and five"
+    else:
+        return "more than five"
+
+
+# keys are tenure buckets, values are lists of salaries for that bucket
+salary_by_tenure_bucket = collections.defaultdict(list)
+
+for salary, tenure in salaries_and_tenures:
+    bucket = tenure_bucket(tenure)
+    salary_by_tenure_bucket[bucket].append(salary)
+
+
+# keys are tenure buckets, values are average salary for that bucket
+average_salary_by_bucket = {
+    tenure_bucket : sum(salaries) / len(salaries)
+    for tenure_bucket, salaries in salary_by_tenure_bucket.iteritems()
+}
+
+print average_salary_by_bucket
+
+
+def predict_paid_or_unpaid(years_of_experience):
+    if years_of_experience < 3.0:
+        return "paid"
+    elif years_of_experience < 8.5:
+        return "unpaid"
+    else:
+        return "paid"
+
+
+interests = [
+    (0, "Hadoop"), (0, "Big Data"), (0, "HBase"), (0, "Java"),
+    (0, "Spark"), (0, "Storm"), (0, "Cassandra"),
+    (1, "NoSQL"), (1, "MongoDB"), (1, "Cassandra"), (1, "HBase"),
+    (1, "Postgres"), (2, "Python"), (2, "scikit-learn"), (2, "scipy"),
+    (2, "numpy"), (2, "statsmodels"), (2, "pandas"), (3, "R"), (3, "Python"),
+    (3, "statistics"), (3, "regression"), (3, "probability"),
+    (4, "machine learning"), (4, "regression"), (4, "decision trees"),
+    (4, "libsvm"), (5, "Python"), (5, "R"), (5, "Java"), (5, "C++"),
+    (5, "Haskell"), (5, "programming languages"), (6, "statistics"),
+    (6, "probability"), (6, "mathematics"), (6, "theory"),
+    (7, "machine learning"), (7, "scikit-learn"), (7, "Mahout"),
+    (7, "neural networks"), (8, "neural networks"), (8, "deep learning"),
+    (8, "Big Data"), (8, "artificial intelligence"), (9, "Hadoop"),
+    (9, "Java"), (9, "MapReduce"), (9, "Big Data")
+]
+
+words_and_counts = collections.Counter(word
+                           for user, interest in interests
+                           for word in interest.lower().split())
+
+
+for word, count in words_and_counts.most_common():
+    if count > 1:
+        print word, count
